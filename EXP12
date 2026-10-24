@@ -1,0 +1,78 @@
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define SIZE 500
+
+int mod26(int n) {
+    return (n % 26 + 26) % 26;
+}
+
+int main(void) {
+    char input[SIZE], plain[SIZE], cipher[SIZE];
+    int i, j, n = 0;
+    int a, b, c1, c2, p1, p2;
+
+    int key[2][2] = {{9, 4}, {5, 7}};
+    int inv[2][2] = {{5, 12}, {15, 25}};
+
+    printf("Enter plaintext:\n");
+    if (fgets(input, sizeof(input), stdin) == NULL)
+        return 1;
+
+    /* Keep only letters and convert to uppercase */
+    for (i = 0; input[i] != '\0'; i++) {
+        if (isalpha((unsigned char)input[i])) {
+            plain[n++] = toupper((unsigned char)input[i]);
+        }
+    }
+
+    /* Add padding if the length is odd */
+    if (n % 2 != 0)
+        plain[n++] = 'X';
+
+    plain[n] = '\0';
+
+    printf("\nPrepared plaintext: %s\n", plain);
+
+    /* Encryption */
+    for (i = 0; i < n; i += 2) {
+        a = plain[i] - 'A';
+        b = plain[i + 1] - 'A';
+
+        c1 = mod26(key[0][0] * a + key[0][1] * b);
+        c2 = mod26(key[1][0] * a + key[1][1] * b);
+
+        cipher[i] = c1 + 'A';
+        cipher[i + 1] = c2 + 'A';
+
+        printf("%c%c -> (%d,%d) -> %c%c\n",
+               plain[i], plain[i + 1], c1, c2,
+               cipher[i], cipher[i + 1]);
+    }
+
+    cipher[n] = '\0';
+
+    printf("\nCiphertext: %s\n", cipher);
+
+    /* Decryption */
+    printf("\nDecryption calculations:\n");
+
+    for (i = 0; i < n; i += 2) {
+        c1 = cipher[i] - 'A';
+        c2 = cipher[i + 1] - 'A';
+
+        p1 = mod26(inv[0][0] * c1 + inv[0][1] * c2);
+        p2 = mod26(inv[1][0] * c1 + inv[1][1] * c2);
+
+        printf("%c%c -> (%d,%d) -> %c%c\n",
+               cipher[i], cipher[i + 1], p1, p2,
+               p1 + 'A', p2 + 'A');
+    }
+
+    printf("\nDecrypted plaintext: %s\n", plain);
+    printf("Remove the final X if it was padding.\n");
+
+    return 0;
+}
